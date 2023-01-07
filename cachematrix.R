@@ -1,26 +1,36 @@
-#Makes 2 functions that when the first function is used it makes a cache.Rdat file on your computer of the variables cache_save and
-#cache_solved to be referenced elsewhere in the functions
+#These Functions let you solve an inverted matrix, caches it, to be called up later.
+#Drastic change from first version after feedback and sugestions.
 
-#Makes cache_save and cache_solved variables of x for later use, then saves it to a cache.Rdat file on the computer
+#MakeCacheMatrix sets up variables that can be used for saving the solved matrix, as well as the inverse matrix.
 
-makeCacheMatrix <- function(x = matrix()){
-  cache_save<-x #save a variable named cache_save for future use with cache_Solve function
-  cache_solved<-solve(x)
-  save(c(cache_save,cache_solved),file = "cache.Rdata") #saves the cache_save function to a local file called "cache.Rdat"
+makeCacheMatrix <- function(x = matrix()) {
+  inv <- matrix()
+  set <- function(y) {
+    x <<- y
+    inv <<- matrix()
+  }
+  get <- function() x
+  setinv <- function(inverse) inv <<- inverse
+  getinv <- function() inv
+  list(set = set, get = get,
+       setinv = setinv,
+       getinv = getinv)
 }
-#loads the cache.Rdata file on the computer created by the makeCacheMatrix function. it first checks to see if what your comparing is the same
-#as the one saved, if it is, returns x solved without needing to solve it. if its not solved then it solves x, saves the new variables to the 
-#same cache folder. then prints X
 
-cacheSolve <- function(x){ #function to inverse x
-  load("cache.Rdata") #load the cache.Rdat file where cache_save and cache_solved variable are saved
-  if(cache_save == x){ #compairs if cache_saved is the same as x, if true then returns the cache_solved variable
-    cache_solved
+
+## Calculates the inverse of the "matrix" created above 
+## and stores it in the cache if not already calculated; 
+## if in the cache already, the function gets the inverse
+
+cacheSolve <- function(x, ...) {
+  ## Return a matrix that is the inverse of 'x'
+  inv <- x$getinv()
+  if(!is.na(inv)) {
+    message("getting cached data")
+    return(inv)
   }
-  else{ #if x is not a saved variable, then solves x, and saves the pre solved, and post solved variable to there own variables
-    cache_save<-x
-    cache_solved<-solve(x)
-    save(c(cache_save,cache_solved),file = "cache.Rdata")
-    cache_solved
-  }
+  data <- x$get()
+  inv <- solve(data, ...)
+  x$setinv(inv)
+  inv
 }
